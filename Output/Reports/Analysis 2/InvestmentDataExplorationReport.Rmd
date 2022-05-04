@@ -1,0 +1,129 @@
+---
+title: "Analysis 2"
+output: html_document
+date: '2022-05-04'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidytext)
+library(textdata)
+library(easystats)
+library(viridis)
+library(hrbrthemes)
+
+```
+
+```{r load data}
+var_names <- names(readr::read_csv("InvestmentsTI.csv", n_max = 1))
+
+dat_invest <- readr::read_csv("InvestmentsTI.csv", skip = 4, col_names = FALSE) |>
+  setNames(var_names)
+```
+
+## Data Wrangling 
+
+```{r average investment data}
+
+# pre test measures of self tangible investments 
+
+dat_invest <- dat_invest |>
+  mutate(pre_selftangible = rowMeans(cbind(dat_invest$tiis4, dat_invest$tiis5, dat_invest$tiis7, dat_invest$tiis8, dat_invest$tiis11), na.rm=T))
+
+# pre test measures of self intangible investments 
+
+dat_invest <- dat_invest |>
+  mutate(pre_selfintangible = rowMeans(cbind(dat_invest$tiis4, dat_invest$tiis5, dat_invest$tiis7, dat_invest$tiis8, dat_invest$tiis11), na.rm=T))
+
+# pre test measures of partner investments total 
+dat_invest <- dat_invest |>
+  mutate (pre_Pinvestments = rowMeans(cbind(dat_invest$Ptiis1, dat_invest$Ptiis2, dat_invest$Ptiis3, dat_invest$Ptiis4, dat_invest$Ptiis5, dat_invest$Ptiis6, dat_invest$Ptiis7, dat_invest$Ptiis8, dat_invest$Ptiis9, dat_invest$Ptiis10, dat_invest$Ptiis11, dat_invest$Ptiis12, dat_invest$Ptiis13), na.rm=T))
+
+# post test measures of partner intangible investments 
+dat_invest <- dat_invest |> 
+  mutate(pPintangible = rowMeans(cbind(dat_invest$pPtiis4, dat_invest$pPtiis5, dat_invest$pPtiis7, dat_invest$pPtiis8, dat_invest$pPtiis11), na.rm=T))
+
+# post test measures of partner tangible investments 
+dat_invest <- dat_invest |>
+  mutate(pPtangible = rowMeans(cbind(dat_invest$pPtiis1, dat_invest$pPtiis2, dat_invest$pPtiis3, dat_invest$pPtiis6, dat_invest$pPtiis9, dat_invest$pPtiis10, dat_invest$pPtiis12, dat_invest$pPtiis13), na.rm=T))
+
+# post test measures of partner investments general 
+dat_invest <- dat_invest |>
+  mutate(pPinvestments = rowMeans(cbind(dat_invest$pPtiis1, dat_invest$pPtiis2, dat_invest$pPtiis3, dat_invest$pPtiis4, dat_invest$pPtiis5, dat_invest$pPtiis6, dat_invest$pPtiis7, dat_invest$pPtiis8, dat_invest$pPtiis9, dat_invest$pPtiis10, dat_invest$pPtiis11, dat_invest$pPtiis12, dat_invest$pPtiis13), na.rm=T))
+```
+
+```{r mutate investment data factor labels}
+dat_invest<- mutate (dat_invest, Manipulation=factor(Manipulation, levels=c(1,2), labels=c("Tangible","Intangible")))
+
+head(dat_invest)
+```
+
+```{r export data}
+write_csv(dat_invest, "dat_invest.csv")
+```
+
+
+
+## Plotting variables 
+
+```{r plot var}
+plot1 <- ggplot(dat_invest, aes(x=Manipulation, y=pPinvestments, fill=Manipulation)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.2) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Perceived partner investment") +
+    xlab("")
+
+```
+
+
+
+From initially plotting the above variables, it seems as though there is a slighter higher average overall percieved partner investment post-manipulation for the group that was exposed to the intangible investment group. That means that participants who wrote about their partners intangible investments were more likely to perceive their partners overall investments afterwords than participants who wrote about their partners tangible investments. 
+
+To investigate further, I will model the relation controlling for pre-manipulation perceieved partner investment. 
+
+## Fit model
+
+```{r fit model, include=FALSE}
+
+mod_invest1 <- glm(
+         pPinvestments ~ Manipulation + pre_Pinvestments, 
+         data = dat_invest
+)
+
+```
+
+## Check model 
+
+```{r check model 1}
+
+check_predictions(mod_invest1)
+check_model(mod_invest1)
+performance(mod_invest1)
+```
+
+```{r check expect}
+
+plot_expect <- estimate_expectation(mod_invest1) |> plot()
+plot_predict <- estimate_prediction(mod_invest1) |> plot()
+
+ggsave("plotexpect.png")
+
+```
+
+
+## Model parameters
+
+```{r parameters}
+
+parameters(mod_invest1)
+
+```
+
+As expected, there was a positive relationship between pre- and post-manipulation percieved partner investment. Regardless of the condition, there was about a 1:1 relationship (.93) between pre_Pinvestment (pre manipulation) and pPinvestments (post manipulation) with a range of [.87, .99] being compatible with our data. Counter to our predictions, this relationship held regardless of the condition, which had a slope of .03 with a large compatibility interval [-.15,22], with an equally likely negative/positive slope. These results do not support the hypothesis that thinking about intangible investments will increase post-manipulation perception of partner investments over and beyond thinking of partner tangible investments. This is of note because prior research showed that past intangible investment predicts commitment whereas past tangible investment does not. Based on this data, we would not conclude that this finding extends to general investments. 
