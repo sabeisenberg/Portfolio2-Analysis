@@ -1,7 +1,7 @@
 # Portfolio1-Analysis2
 Analysis of data for prog data portfolio piece 2
 
-This project manipulated thinking about partner investment to investigate relationships in perceived partner investment between tangible and intangible investments. It was predicted that thinking about partner's intangible investments would lead to stronger increases in percieved partner investment than thinking about tangible investments.  
+This project investigated perceived partner investment between those who wrote about their partner's intangible investments and those who wrote about their partner's tangible investments. It was predicted that thinking about partner's intangible investments would lead to stronger increases in percieved partner investment than thinking about tangible investments.  
 
 | Folders | |
 | ----------- |---------------------|
