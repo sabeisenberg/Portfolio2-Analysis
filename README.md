@@ -5,7 +5,7 @@ This project manipulated thinking about partner investment to investigate relati
 
 | Folders | |
 | ----------- |---------------------|
-| Data | Folder with priginal data from excel |
+| Data | Folder with original data from excel |
 | Doc | Folder with codebook |
 | Output | Folder with R output broken down into subfolders for figures, data exploration report, and cleaned data |
 
